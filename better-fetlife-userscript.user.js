@@ -9,6 +9,7 @@
 // @namespace      maybemaimed.com
 // @description    Enhances the functionality of various features of FetLife.com. Best used in conjunction with other browser add-ons, such as those that reveal Microformats.
 // @include        http://fetlife.com/*
+// @include        https://fetlife.com/*
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js
 // ==/UserScript==
 
