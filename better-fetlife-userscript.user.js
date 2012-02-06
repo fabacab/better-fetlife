@@ -36,8 +36,26 @@ if (window.location.pathname.match(/^\/users\/[0-9]+/)) {
 /**
  * Improve individual event page.
  */
-if (window.location.pathname.match(/^\/events\/[0-9]+/)) {
 
+var x = window.location.pathname;
+
+if (x.match(/^\/events\/[0-9]+\/v1$/)) {
+    x = 1;
+} else if (x.match(/^\/events\/[0-9]+(\/v2)?$/)) {
+    x = 2;
+}
+
+switch (x) {
+    case 1:
+        enhanceVersion1FetLifeEvent();
+    break;
+    case 2:
+        enhanceVersion2FetLifeEvent();
+    break;
+}
+
+// "Version 1" event pages.
+function enhanceVersion1FetLifeEvent () {
     // Add hCalendar classes for markup that's done right.
     $('body').addClass('vevent');
     $('.event_header h2.bottom').addClass('summary');
@@ -64,7 +82,23 @@ if (window.location.pathname.match(/^\/events\/[0-9]+/)) {
 
     // Write out URL.
     $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+}
+// "Version 2" event pages.
+function enhanceVersion2FetLifeEvent () {
+    $('body').addClass('vevent');
+    $('h1[itemprop=name]').addClass('summary');
+    $('[itemprop=description]').addClass('description');
+    $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
+    var start = $('[itemprop=startDate]').attr('content');
+    var end = $('[itemprop=endDate]').attr('content');
+    $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
+    $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
+    $($('[itemprop=endDate]').parent()).addClass('dtend');
+    $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
+
+    // Write out URL.
+    $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
 }
 
 /**
