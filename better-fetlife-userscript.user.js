@@ -1,105 +1,87 @@
 /**
  *
- * This is a Greasemonkey script and must be run using Greasemonkey 0.8 or newer.
+ * This is a Greasemonkey script and must be run using a Greasemonkey-compatible browser.
  *
- * @author Meitar Moscovitz <meitar@maymay.net>
+ * @author maymay <bitetheappleback@gmail.com>
  */
 // ==UserScript==
 // @name           Better FetLife
-// @namespace      maybemaimed.com
+// @version        0.2
+// @namespace      com.maybemaimed.fetlife.better
+// @updateURL      https://userscripts.org/scripts/source/105867.user.js
 // @description    Enhances the functionality of various features of FetLife.com. Best used in conjunction with other browser add-ons, such as those that reveal Microformats.
-// @include        http://fetlife.com/*
-// @include        https://fetlife.com/*
-// @require        https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js
+// @include        /^https?://fetlife\.com/(user|event)s/\d+/
+// @require        https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
+// @grant          GM_log
 // ==/UserScript==
 
-/**
- * Improve individual user profile page.
- */
-if (window.location.pathname.match(/^\/users\/[0-9]+/)) {
+FL_BETTER = {};
+FL_BETTER.CONFIG = {
+    'debug': false, // switch to true to debug.
+};
 
-    // Add hCard classes for markup that's done right.
-    $('#profile').addClass('vcard');
-    $('.profile_avatar.avatar').addClass('photo');
-    $('h2.bottom + p').addClass('adr');
-    $($('h2.bottom + p a')[0]).addClass('locality');
-    $($('h2.bottom + p a')[1]).addClass('region');
-    $($('h2.bottom + p a')[2]).addClass('country-name');
+// Utility debugging function.
+FL_BETTER.log = function (msg) {
+    if (!FL_BETTER.CONFIG.debug) { return; }
+    GM_log('BETTER FETLIFE: ' + msg);
+};
 
-    // Isolate name and add microformat markup.
-    $($('h2.bottom').contents()[0]).wrap('<span class="fn" />')
+// Initializations.
+var uw = (unsafeWindow) ? unsafeWindow : window ; // Help with Chrome compatibility?
+FL_BETTER.init = function () {
+    FL_BETTER.main();
+};
+window.addEventListener('DOMContentLoaded', FL_BETTER.init);
 
-    // Write out URL.
-    $('#profile').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
-}
+// This is the main() function, executed on page load.
+// TODO: Mark up events on user pages and users on event pages.
+FL_BETTER.main = function () {
+    // Determine what type of page and what its ID number is.
+    var m = window.location.pathname.match(/^\/(user|event)s\/(\d+)$/);
+    FL_BETTER.log('Loaded page for ' + m[1] + ' number ' + m[2] + '.');
+    switch (m[1]) {
+        // If on a user profile page,
+        case 'user':
+            // Add hCard classes for markup that's done right.
+            $('#profile').addClass('vcard');
+            $('#profile .pan').addClass('photo');
+            $('h2.bottom + p').addClass('adr');
+            $($('h2.bottom + p a[href^="/cities"]')).addClass('locality');
+            $($('h2.bottom + p a[href^="/administrative_areas"]')).addClass('region');
+            $($('h2.bottom + p a[href^="/countries"]')).addClass('country-name');
 
-/**
- * Improve individual event page.
- */
+            // Isolate name and add microformat markup.
+            $($('h2.bottom').contents()[0]).wrap('<span class="fn" />');
 
-var x = window.location.pathname;
+            // Isolate "About me" content and add microformat markup.
+            $($('h3.bottom::first-child').nextUntil('h3.bottom')).wrapAll('<div class="note" />')
 
-if (x.match(/^\/events\/[0-9]+\/v1$/)) {
-    x = 1;
-} else if (x.match(/^\/events\/[0-9]+(\/v2)?$/)) {
-    x = 2;
-}
+            // Write out URL.
+            $('#profile').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+        break;
 
-switch (x) {
-    case 1:
-        enhanceVersion1FetLifeEvent();
-    break;
-    case 2:
-        enhanceVersion2FetLifeEvent();
-    break;
-}
+        // If on an event page,
+        case 'event':
+            $('body').addClass('vevent');
+            $('h1[itemprop=name]').addClass('summary');
+            $('[itemprop=description]').addClass('description');
 
-// "Version 1" event pages.
-function enhanceVersion1FetLifeEvent () {
-    // Add hCalendar classes for markup that's done right.
-    $('body').addClass('vevent');
-    $('.event_header h2.bottom').addClass('summary');
-    $($('.container .clearfix')[1]).addClass('description');
-    $($('.event_info td')[7]).addClass('location');
+            // TODO: Parse venues out of location data and mark them up using hCards
+            //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
+            $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
-    // Gather event details.
+            var start = $('[itemprop=startDate]').attr('content');
+            var end = $('[itemprop=endDate]').attr('content');
+            $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
+            $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
+            $($('[itemprop=endDate]').parent()).addClass('dtend');
+            $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
 
-    // Learn dtstart and dtend.
-    var times = $('.event_info td')[3].textContent.split(' to ');
-    var start = times[0];
-    var end = times[1];
-    var dtstart = new Date($('.event_info td')[1].textContent);
-    dtstart = setHumanTime(start, dtstart);
-    var dtend = new Date($('.event_info td')[1].textContent);
-    dtend = setHumanTime(end, dtend);
-
-    // Write out missing vevent HTML.
-    // Write out dtstart and dtend metadata.
-    $($('.event_info td')[3]).addClass('dtstart');
-    $($('.event_info td')[3]).attr('title', ISODateString(dtstart));
-    $($('.event_info td')[4]).addClass('dtend');
-    $($('.event_info td')[4]).attr('title', ISODateString(dtend));
-
-    // Write out URL.
-    $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
-}
-// "Version 2" event pages.
-function enhanceVersion2FetLifeEvent () {
-    $('body').addClass('vevent');
-    $('h1[itemprop=name]').addClass('summary');
-    $('[itemprop=description]').addClass('description');
-    $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
-
-    var start = $('[itemprop=startDate]').attr('content');
-    var end = $('[itemprop=endDate]').attr('content');
-    $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
-    $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
-    $($('[itemprop=endDate]').parent()).addClass('dtend');
-    $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
-
-    // Write out URL.
-    $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
-}
+            // Write out URL.
+            $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+        break;
+    }
+};
 
 /**
  * Takes in the human time string and a Date object and returns the
@@ -121,7 +103,7 @@ function setHumanTime (str, obj_date) {
     return obj_date;
 }
 
-// Stolen directly from
+// Copied directly from
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Date#Example.3a_ISO_8601_formatted_dates
 function ISODateString(d){
  function pad(n){return n<10 ? '0'+n : n}
