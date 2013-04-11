@@ -67,7 +67,7 @@ FL_BETTER.main = function () {
 };
 
 FL_BETTER.processEvent = function () {
-    $('body').addClass('vevent');
+    $("[itemtype='http://schema.org/Event']").addClass('vevent');
     $('h1[itemprop=name]').addClass('summary');
     $('[itemprop=description]').addClass('description');
 
