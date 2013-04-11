@@ -61,26 +61,31 @@ FL_BETTER.main = function () {
 
         // If on an event page,
         case 'event':
-            $('body').addClass('vevent');
-            $('h1[itemprop=name]').addClass('summary');
-            $('[itemprop=description]').addClass('description');
-
-            // TODO: Parse venues out of location data and mark them up using hCards
-            //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
-            $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
-
-            var start = $('[itemprop=startDate]').attr('content');
-            var end = $('[itemprop=endDate]').attr('content');
-            $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
-            $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
-            $($('[itemprop=endDate]').parent()).addClass('dtend');
-            $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
-
-            // Write out URL.
-            $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+            FL_BETTER.processEvent();
         break;
     }
 };
+
+FL_BETTER.processEvent = function () {
+    $('body').addClass('vevent');
+    $('h1[itemprop=name]').addClass('summary');
+    $('[itemprop=description]').addClass('description');
+
+    // TODO: Parse venues out of location data and mark them up using hCards
+    //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
+    $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
+
+    var start = $('[itemprop=startDate]').attr('content');
+    var end = $('[itemprop=endDate]').attr('content');
+    $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
+    $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
+    $($('[itemprop=endDate]').parent()).addClass('dtend');
+    $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
+
+    // Write out URL.
+    $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+
+}
 
 /**
  * Takes in the human time string and a Date object and returns the
