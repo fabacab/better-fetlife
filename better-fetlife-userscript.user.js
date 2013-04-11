@@ -60,6 +60,14 @@ FL_BETTER.processEvent = function () {
         return $('<abbr class="value"></abbr>').attr('title', dateTimeString);
     };
 
+    var addTimeMarkup = function (startOrEnd) {
+        var timeElement = $('[itemprop=' + startOrEnd + 'Date]');
+        var dateTimeString = timeElement[0] ? parseDateTime(timeElement) : null;
+        var container = $('<span></span>').addClass('dt' + startOrEnd);
+        container.append(dateTimeMarkup(dateTimeString));
+        timeElement.after(container);
+    };
+
     $("[itemtype='http://schema.org/Event']").addClass('vevent');
     $('h1[itemprop=name]').addClass('summary');
     $('[itemprop=description]').addClass('description');
@@ -68,17 +76,8 @@ FL_BETTER.processEvent = function () {
     //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
     $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
-    var startElement = $('[itemprop=startDate]');
-    var start = startElement[0] ? parseDateTime(startElement) : null;
-    var dtstartContainer = $('<span class="dtstart"></span>')
-    dtstartContainer.append(dateTimeMarkup(start));
-    startElement.after(dtstartContainer);
-
-    var endElement = $('[itemprop=endDate]');
-    var end = endElement[0] ? parseDateTime(endElement) : null;
-    var dtendContainer = $('<span class="dtend"></span>')
-    dtendContainer.append(dateTimeMarkup(end));
-    endElement.after(dtendContainer);
+    addTimeMarkup('start');
+    addTimeMarkup('end');
 
     // Write out URL.
     $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
