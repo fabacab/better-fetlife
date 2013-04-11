@@ -56,6 +56,10 @@ FL_BETTER.processEvent = function () {
         return metaDateTimeElement.attr('content').replace(/Z$/, '');
     };
 
+    var dateTimeMarkup = function (dateTimeString) {
+        return $('<abbr class="value"></abbr>').attr('title', dateTimeString);
+    };
+
     $("[itemtype='http://schema.org/Event']").addClass('vevent');
     $('h1[itemprop=name]').addClass('summary');
     $('[itemprop=description]').addClass('description');
@@ -67,13 +71,13 @@ FL_BETTER.processEvent = function () {
     var startElement = $('[itemprop=startDate]');
     var start = startElement[0] ? parseDateTime(startElement) : null;
     var dtstartContainer = $('<span class="dtstart"></span>')
-    dtstartContainer.append($('<abbr class="value"></abbr>').attr('title', start));
+    dtstartContainer.append(dateTimeMarkup(start));
     startElement.after(dtstartContainer);
 
     var endElement = $('[itemprop=endDate]');
     var end = endElement[0] ? parseDateTime(endElement) : null;
     var dtendContainer = $('<span class="dtend"></span>')
-    dtendContainer.append($('<abbr class="value"></abbr>').attr('title', end));
+    dtendContainer.append(dateTimeMarkup(end));
     endElement.after(dtendContainer);
 
     // Write out URL.
