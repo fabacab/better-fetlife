@@ -52,6 +52,10 @@ FL_BETTER.main = function () {
 };
 
 FL_BETTER.processEvent = function () {
+    var parseDateTime = function (metaDateTimeElement) {
+        return metaDateTimeElement.attr('content').replace(/Z$/, '');
+    };
+
     $("[itemtype='http://schema.org/Event']").addClass('vevent');
     $('h1[itemprop=name]').addClass('summary');
     $('[itemprop=description]').addClass('description');
@@ -61,13 +65,13 @@ FL_BETTER.processEvent = function () {
     $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
     var startElement = $('[itemprop=startDate]');
-    var start = startElement[0] ? startElement.attr('content').replace(/Z$/, '') : null;
+    var start = startElement[0] ? parseDateTime(startElement) : null;
     var dtstartContainer = $('<span class="dtstart"></span>')
     dtstartContainer.append($('<abbr class="value"></abbr>').attr('title', start));
     startElement.after(dtstartContainer);
 
     var endElement = $('[itemprop=endDate]');
-    var end = endElement[0] ? endElement.attr('content').replace(/Z$/, '') : null;
+    var end = endElement[0] ? parseDateTime(endElement) : null;
     var dtendContainer = $('<span class="dtend"></span>')
     dtendContainer.append($('<abbr class="value"></abbr>').attr('title', end));
     endElement.after(dtendContainer);
