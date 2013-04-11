@@ -10,13 +10,13 @@ describe("FL_BETTER.processEvent", function () {
 
     it("should set the start date from the startDate element", function () {
       FL_BETTER.processEvent();
-      expect($('.dtstart time.value')).toHaveAttr('datetime', this.datetime)
+      expect($('.dtstart abbr.value')).toHaveAttr('title', this.datetime)
     });
 
     it("should set the end date from the endDate element", function () {
       var datetime = '2013-04-13 15:00'
       FL_BETTER.processEvent();
-      expect($('.dtend time.value')).toHaveAttr('datetime', this.datetime)
+      expect($('.dtend abbr.value')).toHaveAttr('title', this.datetime)
     });
   });
 });

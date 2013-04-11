@@ -78,13 +78,13 @@ FL_BETTER.processEvent = function () {
     var startElement = $('[itemprop=startDate]');
     var start = startElement.attr('content').replace(/Z$/, '');
     var dtstartContainer = $('<span class="dtstart"></span>')
-    dtstartContainer.append($('<time class="value"></time>').attr('datetime', start));
+    dtstartContainer.append($('<abbr class="value"></abbr>').attr('title', start));
     startElement.after(dtstartContainer);
 
     var endElement = $('[itemprop=endDate]');
     var end = endElement.attr('content').replace(/Z$/, '');
     var dtendContainer = $('<span class="dtend"></span>')
-    dtendContainer.append($('<time class="value"></time>').attr('datetime', end));
+    dtendContainer.append($('<abbr class="value"></abbr>').attr('title', end));
     endElement.after(dtendContainer);
 
     // Write out URL.
