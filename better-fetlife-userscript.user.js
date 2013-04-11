@@ -3,6 +3,7 @@
  * This is a Greasemonkey script and must be run using a Greasemonkey-compatible browser.
  *
  * @author maymay <bitetheappleback@gmail.com>
+ * @author Marnen Laibow-Koser <marnen@marnen.org>
  */
 // ==UserScript==
 // @name           Better FetLife
