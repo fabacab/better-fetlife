@@ -27,7 +27,6 @@ FL_BETTER.log = function (msg) {
 };
 
 // Initializations.
-var uw = (unsafeWindow) ? unsafeWindow : window ; // Help with Chrome compatibility?
 FL_BETTER.init = function () {
     FL_BETTER.main();
 };
