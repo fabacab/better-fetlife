@@ -91,35 +91,3 @@ FL_BETTER.processEvent = function () {
     $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
 
 }
-
-/**
- * Takes in the human time string and a Date object and returns the
- * modified Date object.
- */
-function setHumanTime (str, obj_date) {
-    // str will be something like "07:00 PM"
-    var t = str.match(/[0-9]{2}:[0-9]{2}/).toString();
-    var hrs = parseInt(t.split(':')[0], 10); // include decimal radix purposefully
-    var min = parseInt(t.split(':')[1], 10);
-    // If PM is present, add 12.
-    if (str.match(/ PM$/)) {
-        hrs += 12;
-    }
-
-    obj_date.setHours(hrs);
-    obj_date.setMinutes(min);
-
-    return obj_date;
-}
-
-// Copied directly from
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Date#Example.3a_ISO_8601_formatted_dates
-function ISODateString(d){
- function pad(n){return n<10 ? '0'+n : n}
- return d.getUTCFullYear()+'-'
-      + pad(d.getUTCMonth()+1)+'-'
-      + pad(d.getUTCDate())+'T'
-      + pad(d.getUTCHours())+':'
-      + pad(d.getUTCMinutes())+':'
-      + pad(d.getUTCSeconds())+'Z'
-}
