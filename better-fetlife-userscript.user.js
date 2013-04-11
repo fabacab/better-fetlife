@@ -76,13 +76,13 @@ FL_BETTER.processEvent = function () {
     $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
     var startElement = $('[itemprop=startDate]');
-    var start = startElement.attr('content').replace(/Z$/, '');
+    var start = startElement[0] ? startElement.attr('content').replace(/Z$/, '') : null;
     var dtstartContainer = $('<span class="dtstart"></span>')
     dtstartContainer.append($('<abbr class="value"></abbr>').attr('title', start));
     startElement.after(dtstartContainer);
 
     var endElement = $('[itemprop=endDate]');
-    var end = endElement.attr('content').replace(/Z$/, '');
+    var end = endElement[0] ? endElement.attr('content').replace(/Z$/, '') : null;
     var dtendContainer = $('<span class="dtend"></span>')
     dtendContainer.append($('<abbr class="value"></abbr>').attr('title', end));
     endElement.after(dtendContainer);
