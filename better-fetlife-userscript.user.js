@@ -75,12 +75,17 @@ FL_BETTER.processEvent = function () {
     //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
     $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
 
-    var start = $('[itemprop=startDate]').attr('content');
-    var end = $('[itemprop=endDate]').attr('content');
-    $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
-    $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
-    $($('[itemprop=endDate]').parent()).addClass('dtend');
-    $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
+    var startElement = $('[itemprop=startDate]');
+    var start = startElement.attr('content').replace(/Z$/, '');
+    var dtstartContainer = $('<span class="dtstart"></span>')
+    dtstartContainer.append($('<time class="value"></time>').attr('datetime', start));
+    startElement.after(dtstartContainer);
+
+    var endElement = $('[itemprop=endDate]');
+    var end = endElement.attr('content').replace(/Z$/, '');
+    var dtendContainer = $('<span class="dtend"></span>')
+    dtendContainer.append($('<time class="value"></time>').attr('datetime', end));
+    endElement.after(dtendContainer);
 
     // Write out URL.
     $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
