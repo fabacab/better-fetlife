@@ -16,7 +16,7 @@
 // @grant          GM_log
 // ==/UserScript==
 
-FL_BETTER = {};
+var FL_BETTER = {};
 FL_BETTER.CONFIG = {
     'debug': false, // switch to true to debug.
 };
