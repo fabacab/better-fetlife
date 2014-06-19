@@ -3,6 +3,7 @@
  * This is a Greasemonkey script and must be run using a Greasemonkey-compatible browser.
  *
  * @author maymay <bitetheappleback@gmail.com>
+ * @author Marnen Laibow-Koser <marnen@marnen.org>
  */
 // ==UserScript==
 // @name           Better FetLife
@@ -15,7 +16,7 @@
 // @grant          GM_log
 // ==/UserScript==
 
-FL_BETTER = {};
+var FL_BETTER = {};
 FL_BETTER.CONFIG = {
     'debug': false, // switch to true to debug.
 };
@@ -27,7 +28,6 @@ FL_BETTER.log = function (msg) {
 };
 
 // Initializations.
-var uw = (unsafeWindow) ? unsafeWindow : window ; // Help with Chrome compatibility?
 FL_BETTER.init = function () {
     FL_BETTER.main();
 };
@@ -42,75 +42,64 @@ FL_BETTER.main = function () {
     switch (m[1]) {
         // If on a user profile page,
         case 'user':
-            // Add hCard classes for markup that's done right.
-            $('#profile').addClass('vcard');
-            $('#profile .pan').addClass('photo');
-            $('h2.bottom + p').addClass('adr');
-            $($('h2.bottom + p a[href^="/cities"]')).addClass('locality');
-            $($('h2.bottom + p a[href^="/administrative_areas"]')).addClass('region');
-            $($('h2.bottom + p a[href^="/countries"]')).addClass('country-name');
-
-            // Isolate name and add microformat markup.
-            $($('h2.bottom').contents()[0]).wrap('<span class="fn" />');
-
-            // Isolate "About me" content and add microformat markup.
-            $($('h3.bottom::first-child').nextUntil('h3.bottom')).wrapAll('<div class="note" />')
-
-            // Write out URL.
-            $('#profile').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+            FL_BETTER.processUser();
         break;
 
         // If on an event page,
         case 'event':
-            $('body').addClass('vevent');
-            $('h1[itemprop=name]').addClass('summary');
-            $('[itemprop=description]').addClass('description');
-
-            // TODO: Parse venues out of location data and mark them up using hCards
-            //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
-            $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
-
-            var start = $('[itemprop=startDate]').attr('content');
-            var end = $('[itemprop=endDate]').attr('content');
-            $($('[itemprop=startDate]').parents('.db')).addClass('dtstart');
-            $($('[itemprop=startDate]').parents('.db')).attr('title', start.substr(0, start.length - 1)); // remove "Z" timezone.
-            $($('[itemprop=endDate]').parent()).addClass('dtend');
-            $($('[itemprop=endDate]').parent()).attr('title', end.substr(0, end.length - 1));
-
-            // Write out URL.
-            $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+            FL_BETTER.processEvent();
         break;
     }
 };
 
-/**
- * Takes in the human time string and a Date object and returns the
- * modified Date object.
- */
-function setHumanTime (str, obj_date) {
-    // str will be something like "07:00 PM"
-    var t = str.match(/[0-9]{2}:[0-9]{2}/).toString();
-    var hrs = parseInt(t.split(':')[0], 10); // include decimal radix purposefully
-    var min = parseInt(t.split(':')[1], 10);
-    // If PM is present, add 12.
-    if (str.match(/ PM$/)) {
-        hrs += 12;
-    }
+FL_BETTER.processEvent = function () {
+    var parseDateTime = function (metaDateTimeElement) {
+        return metaDateTimeElement.attr('content').replace(/Z$/, '');
+    };
 
-    obj_date.setHours(hrs);
-    obj_date.setMinutes(min);
+    var dateTimeMarkup = function (dateTimeString) {
+        return $('<abbr class="value"></abbr>').attr('title', dateTimeString);
+    };
 
-    return obj_date;
-}
+    var addTimeMarkup = function (startOrEnd) {
+        var timeElement = $('[itemprop=' + startOrEnd + 'Date]');
+        var dateTimeString = timeElement[0] ? parseDateTime(timeElement) : null;
+        var container = $('<span></span>').addClass('dt' + startOrEnd);
+        container.append(dateTimeMarkup(dateTimeString));
+        timeElement.after(container);
+    };
 
-// Copied directly from
-// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Date#Example.3a_ISO_8601_formatted_dates
-function ISODateString(d){
- function pad(n){return n<10 ? '0'+n : n}
- return d.getUTCFullYear()+'-'
-      + pad(d.getUTCMonth()+1)+'-'
-      + pad(d.getUTCDate())+'T'
-      + pad(d.getUTCHours())+':'
-      + pad(d.getUTCMinutes())+':'
-      + pad(d.getUTCSeconds())+'Z'
-}
+    $("[itemtype='http://schema.org/Event']").addClass('vevent');
+    $('h1[itemprop=name]').addClass('summary');
+    $('[itemprop=description]').addClass('description');
+
+    // TODO: Parse venues out of location data and mark them up using hCards
+    //       See: http://microformats.org/wiki/hcalendar-brainstorming#hCard_locations
+    $($('[itemprop=location]').parents().children('span')[1]).addClass('location');
+
+    addTimeMarkup('start');
+    addTimeMarkup('end');
+
+    // Write out URL.
+    $('.vevent .description').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+};
+
+FL_BETTER.processUser = function () {
+    // Add hCard classes for markup that's done right.
+    $('#profile').addClass('vcard');
+    $('#profile .pan').addClass('photo');
+    $('h2.bottom + p').addClass('adr');
+    $($('h2.bottom + p a[href^="/cities"]')).addClass('locality');
+    $($('h2.bottom + p a[href^="/administrative_areas"]')).addClass('region');
+    $($('h2.bottom + p a[href^="/countries"]')).addClass('country-name');
+
+    // Isolate name and add microformat markup.
+    $($('h2.bottom').contents()[0]).wrap('<span class="fn" />');
+
+    // Isolate "About me" content and add microformat markup.
+    $($('h3.bottom::first-child').nextUntil('h3.bottom')).wrapAll('<div class="note" />')
+
+    // Write out URL.
+    $('#profile').append('<a style="display: none;" class="url" href="' + window.location.href + '">Make FetLife Better.</a>');
+
+};
